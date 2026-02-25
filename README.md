@@ -11,7 +11,7 @@ Combine multiple [Claude Code](https://claude.ai/code) skills into one composite
                     │
                     ▼
           ┌─────────────────┐
-          │  compose.py     │
+          │    lego.py      │
           └────────┬────────┘
                    │
                    ▼
@@ -44,7 +44,7 @@ git clone https://github.com/prashaantr/skills-lego
 cd skills-lego
 
 # Create a composite skill
-python compose.py \
+python lego.py \
     --name "document-suite" \
     --skills "github.com/user/pdf-skill" "github.com/user/xlsx-skill" \
     --workflow "Use PDF skill for reading documents, XLSX for spreadsheets" \
@@ -59,7 +59,7 @@ ln -s $(pwd)/my-composite ~/.claude/skills/document-suite
 Combines [assembly-instructions](https://github.com/user/assembly-instructions) with [nano-banana](https://github.com/user/nano-banana) (AI image generation):
 
 ```bash
-python compose.py \
+python lego.py \
     --name "ikea-generator" \
     --skills \
         "github.com/user/assembly-instructions" \
@@ -101,7 +101,7 @@ my-composite/
 ### Create Composite
 
 ```bash
-python compose.py \
+python lego.py \
     --name "my-workflow" \
     --skills "github.com/..." "github.com/..." \
     --workflow "How skills work together..." \
@@ -114,13 +114,13 @@ python compose.py \
 Re-fetch latest versions from source repos:
 
 ```bash
-python compose.py --update ./my-composite
+python lego.py --update ./my-composite
 ```
 
 ### Package for Distribution
 
 ```bash
-python compose.py --package ./my-composite --output my-composite.zip
+python lego.py --package ./my-composite --output my-composite.zip
 ```
 
 ## How It Works
@@ -167,7 +167,7 @@ When you want the latest versions, you have two options:
 Re-fetch all skills from their original repos:
 
 ```bash
-python compose.py --update ./my-composite
+python lego.py --update ./my-composite
 ```
 
 This reads `SOURCES.md`, fetches the latest code from each repo, and rebuilds the composite while **preserving your custom orchestration logic** in SKILL.md.
@@ -177,7 +177,7 @@ This reads `SOURCES.md`, fetches the latest code from each repo, and rebuilds th
 If you want to change the workflow or add/remove skills:
 
 ```bash
-python compose.py \
+python lego.py \
     --name "my-composite" \
     --skills "github.com/user/skill-a" "github.com/user/skill-b" \
     --workflow "Updated workflow description..." \
@@ -198,7 +198,7 @@ python compose.py \
 │  (frozen at commit abc123, def456)      │
 └────────────────────┬────────────────────┘
                      │
-                     │  python compose.py --update .
+                     │  python lego.py --update .
                      ▼
 ┌─────────────────────────────────────────┐
 │         Reads SOURCES.md                │

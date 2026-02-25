@@ -14,13 +14,13 @@ Last composed: 2025-02-25
 To update this composite with the latest versions:
 
 ```bash
-python compose.py --update .
+python lego.py --update .
 ```
 
 Or regenerate manually:
 
 ```bash
-python compose.py \
+python lego.py \
     --name "ikea-generator" \
     --skills \
         "github.com/prashaantr/assembly-instructions" \

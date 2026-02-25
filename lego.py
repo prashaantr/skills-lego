@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Skill Composer - Combine multiple Claude Code skills into one composite skill.
+Skills Lego - Combine multiple Claude Code skills into one composite skill.
 
 Usage:
-    python compose.py \
+    python lego.py \
         --name "my-workflow" \
         --skills "github.com/user/skill-a" "github.com/user/skill-b" \
         --workflow "Description of how skills work together" \
         --output ./my-composite
 
-    python compose.py --update ./existing-composite  # Re-fetch from SOURCES.md
+    python lego.py --update ./existing-composite  # Re-fetch from SOURCES.md
 """
 
 import argparse
@@ -303,13 +303,13 @@ def generate_sources_md(skills: list[dict]) -> str:
         "To update this composite with the latest versions:",
         "",
         "```bash",
-        "python compose.py --update .",
+        "python lego.py --update .",
         "```",
         "",
         "Or regenerate manually:",
         "",
         "```bash",
-        "python compose.py \\",
+        "python lego.py \\",
     ])
 
     for i, skill in enumerate(skills):
@@ -438,22 +438,22 @@ def package(composite_path: Path, output_file: Path) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Combine multiple Claude Code skills into one composite skill.",
+        description="Skills Lego - Combine multiple Claude Code skills into one composite skill.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Create a new composite
-  python compose.py \\
+  python lego.py \\
       --name "document-suite" \\
       --skills "github.com/user/pdf-skill" "github.com/user/xlsx-skill" \\
       --workflow "Use PDF for reading documents, XLSX for spreadsheets" \\
       --output ./my-composite
 
   # Update existing composite from SOURCES.md
-  python compose.py --update ./my-composite
+  python lego.py --update ./my-composite
 
   # Package as .zip
-  python compose.py --package ./my-composite --output my-composite.zip
+  python lego.py --package ./my-composite --output my-composite.zip
         """
     )
 

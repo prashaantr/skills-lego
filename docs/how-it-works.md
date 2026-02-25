@@ -1,4 +1,4 @@
-# How Skill Composer Works
+# How Skills Lego Works
 
 ## The Problem
 
@@ -14,7 +14,7 @@ But there's no way to:
 
 ## The Solution
 
-Skill Composer creates **composite skills** - regular skills that bundle other skills together with orchestration logic.
+Skills Lego creates **composite skills** - regular skills that bundle other skills together with orchestration logic.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ Skill Composer creates **composite skills** - regular skills that bundle other s
                │                        │
                ▼                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│                     compose.py                           │
+│                      lego.py                             │
 │                                                          │
 │  1. Clone repos                                          │
 │  2. Extract SKILL.md → instructions.md                   │
@@ -152,10 +152,10 @@ Since composites are frozen snapshots, updates are explicit:
 
 ```bash
 # Check what would update
-python compose.py --update ./my-composite --dry-run
+python lego.py --update ./my-composite --dry-run
 
 # Actually update
-python compose.py --update ./my-composite
+python lego.py --update ./my-composite
 ```
 
 This re-fetches from the URLs in SOURCES.md and rebuilds, preserving your custom orchestration logic.
@@ -166,7 +166,7 @@ This re-fetches from the URLs in SOURCES.md and rebuilds, preserving your custom
 |----------|------|------|
 | Install separately | Simple, always current | No orchestration, manual coordination |
 | Symlinks (dev) | Live updates, easy to modify | Not distributable |
-| **Skill Composer** | Single install, orchestrated, distributable | Frozen snapshot |
+| **Skills Lego** | Single install, orchestrated, distributable | Frozen snapshot |
 | Package manager | Version constraints, auto-updates | Complex infrastructure |
 
-Skill Composer hits the sweet spot: simple enough to use today, powerful enough for real workflows.
+Skills Lego hits the sweet spot: simple enough to use today, powerful enough for real workflows.
