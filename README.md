@@ -4,6 +4,25 @@
 
 Combine multiple [Claude Code](https://claude.ai/code) skills into one composite skill with orchestration logic.
 
+```
+┌─────────────┐   ┌─────────────┐   ┌─────────────┐
+│  PDF Skill  │   │ XLSX Skill  │   │ Chart Skill │
+└──────┬──────┘   └──────┬──────┘   └──────┬──────┘
+       │                 │                 │
+       └────────────┬────┴────────────────┘
+                    │
+                    ▼
+          ┌─────────────────┐
+          │    lego.py      │
+          └────────┬────────┘
+                   │
+                   ▼
+          ┌─────────────────┐
+          │ Document Suite  │  ← One composite skill
+          │ (with workflow) │
+          └─────────────────┘
+```
+
 ## Why?
 
 You have 3 skills that work great together. Instead of installing them separately, combine them into **one skill** with orchestration logic that defines *how* they work together.
