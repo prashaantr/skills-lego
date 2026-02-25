@@ -1,25 +1,8 @@
 # Skills Lego
 
-Combine multiple [Claude Code](https://claude.ai/code) skills into one composite skill with orchestration logic.
+![Skills Lego](assets/skills-lego.png)
 
-```
-┌─────────────┐   ┌─────────────┐   ┌─────────────┐
-│  PDF Skill  │   │ XLSX Skill  │   │ Chart Skill │
-└──────┬──────┘   └──────┬──────┘   └──────┬──────┘
-       │                 │                 │
-       └────────────┬────┴────────────────┘
-                    │
-                    ▼
-          ┌─────────────────┐
-          │    lego.py      │
-          └────────┬────────┘
-                   │
-                   ▼
-          ┌─────────────────┐
-          │ Document Suite  │  ← One composite skill
-          │ (with workflow) │
-          └─────────────────┘
-```
+Combine multiple [Claude Code](https://claude.ai/code) skills into one composite skill with orchestration logic.
 
 ## Why?
 
