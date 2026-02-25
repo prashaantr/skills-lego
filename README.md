@@ -40,7 +40,7 @@ You have 3 skills that work great together. Instead of installing them separatel
 
 ```bash
 # Clone
-git clone https://github.com/prashaantranganathan/skills-lego
+git clone https://github.com/prashaantr/skills-lego
 cd skills-lego
 
 # Create a composite skill

@@ -6,8 +6,8 @@ Last composed: 2025-02-25
 
 | Skill | Source | Commit | License |
 |-------|--------|--------|---------|
-| assembly-instructions | [github.com/prashaantranganathan/assembly-instructions](https://github.com/prashaantranganathan/assembly-instructions) | `abc123d` | MIT |
-| nano-banana | [github.com/prashaantranganathan/nano-banana](https://github.com/prashaantranganathan/nano-banana) | `def456e` | MIT |
+| assembly-instructions | [github.com/prashaantr/assembly-instructions](https://github.com/prashaantr/assembly-instructions) | `abc123d` | MIT |
+| nano-banana | [github.com/prashaantr/nano-banana](https://github.com/prashaantr/nano-banana) | `def456e` | MIT |
 
 ## Updating
 
@@ -23,8 +23,8 @@ Or regenerate manually:
 python compose.py \
     --name "ikea-generator" \
     --skills \
-        "github.com/prashaantranganathan/assembly-instructions" \
-        "github.com/prashaantranganathan/nano-banana" \
+        "github.com/prashaantr/assembly-instructions" \
+        "github.com/prashaantr/nano-banana" \
     --workflow "When creating IKEA-style assembly instructions..." \
     --output ./ikea-generator
 ```
