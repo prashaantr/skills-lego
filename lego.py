@@ -133,9 +133,12 @@ def fetch_skill(url: str, dest: Path) -> dict:
         # Extract metadata from SKILL.md
         metadata = parse_skill_md(dest / "SKILL.md")
 
+        # Use skill name from @skill-name if present, otherwise repo name
+        effective_name = skill_path.split("/")[-1] if skill_path else repo
+
         return {
-            "name": repo,
-            "url": f"github.com/{owner}/{repo}",
+            "name": effective_name,
+            "url": f"github.com/{owner}/{repo}" + (f"@{effective_name}" if skill_path else ""),
             "branch": branch,
             "commit": commit,
             "description": metadata.get("description", ""),
