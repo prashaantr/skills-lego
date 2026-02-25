@@ -212,7 +212,7 @@ def detect_license(path: Path) -> str:
 
 
 def rewrite_paths(content: str, skill_name: str) -> str:
-    """Rewrite relative paths to include skill prefix."""
+    """Rewrite relative paths to include skill prefix (old style - kept for compatibility)."""
     patterns = [
         # Backtick paths
         (r'`references/', f'`skills/{skill_name}/references/'),
@@ -227,6 +227,29 @@ def rewrite_paths(content: str, skill_name: str) -> str:
         # Markdown links
         (r'\]\(references/', f'](skills/{skill_name}/references/'),
         (r'\]\(scripts/', f'](skills/{skill_name}/scripts/'),
+    ]
+
+    for pattern, replacement in patterns:
+        content = re.sub(pattern, replacement, content)
+
+    return content
+
+
+def rewrite_paths_for_references(content: str, skill_name: str) -> str:
+    """Rewrite paths for the new references/ structure."""
+    patterns = [
+        # Backtick paths - references go to references/{skill-name}/
+        (r'`references/', f'`references/{skill_name}/'),
+        (r'`scripts/', f'`scripts/{skill_name}/'),
+        # Relative paths
+        (r'\./references/', f'./references/{skill_name}/'),
+        (r'\./scripts/', f'./scripts/{skill_name}/'),
+        # Markdown links
+        (r'\]\(references/', f'](references/{skill_name}/'),
+        (r'\]\(scripts/', f'](scripts/{skill_name}/'),
+        # Also handle skills/ paths that might exist
+        (r'skills/[^/]+/references/', f'references/{skill_name}/'),
+        (r'skills/[^/]+/scripts/', f'scripts/{skill_name}/'),
     ]
 
     for pattern, replacement in patterns:
@@ -264,14 +287,14 @@ def generate_skill_md(name: str, description: str, skills: list[dict], workflow:
         "",
         "## Included Skills",
         "",
-        "| Skill | Description | Instructions |",
-        "|-------|-------------|--------------|",
+        "| Skill | Description | Reference |",
+        "|-------|-------------|-----------|",
     ])
 
     for skill in skills:
         skill_name = skill["name"]
         skill_desc = skill.get("description", "")[:50]
-        lines.append(f"| {skill_name} | {skill_desc} | `skills/{skill_name}/instructions.md` |")
+        lines.append(f"| {skill_name} | {skill_desc} | `references/{skill_name}.md` |")
 
     lines.extend([
         "",
@@ -287,7 +310,7 @@ def generate_skill_md(name: str, description: str, skills: list[dict], workflow:
 
     for skill in skills:
         skill_name = skill["name"]
-        lines.append(f"| `skills/{skill_name}/instructions.md` | When working with {skill_name} functionality |")
+        lines.append(f"| `references/{skill_name}.md` | When working with {skill_name} functionality |")
 
     lines.extend([
         "",
@@ -357,40 +380,58 @@ def compose(
     workflow: str = "",
     description: str = "",
 ) -> None:
-    """Compose multiple skills into one."""
+    """Compose multiple skills into one following skill-creator structure."""
 
     print(f"\nComposing '{name}' from {len(skill_urls)} skills...\n")
 
-    # Create output directory
+    # Create output directory with proper skill structure
     output_path.mkdir(parents=True, exist_ok=True)
-    skills_dir = output_path / "skills"
-    skills_dir.mkdir(exist_ok=True)
+    references_dir = output_path / "references"
+    scripts_dir = output_path / "scripts"
+    references_dir.mkdir(exist_ok=True)
 
-    # Fetch each skill
+    # Fetch each skill into a temp location, then reorganize
     skills = []
     for url in skill_urls:
         # Parse URL to get skill name (use @skill-name if present, else repo name)
         _, repo, _, skill_path = parse_github_url(url)
         skill_name = skill_path.split("/")[-1] if skill_path else repo
-        skill_dest = skills_dir / skill_name
 
-        metadata = fetch_skill(url, skill_dest)
-        skills.append(metadata)
+        # Fetch to temp location
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_dest = Path(tmp) / skill_name
+            metadata = fetch_skill(url, tmp_dest)
+            skills.append(metadata)
 
-        # Rename SKILL.md to instructions.md and strip frontmatter
-        skill_md = skill_dest / "SKILL.md"
-        if skill_md.exists():
-            parsed = parse_skill_md(skill_md)
+            # Process SKILL.md -> references/{skill-name}.md
+            skill_md = tmp_dest / "SKILL.md"
+            if skill_md.exists():
+                parsed = parse_skill_md(skill_md)
+                # Rewrite paths for new structure
+                rewritten_body = rewrite_paths_for_references(parsed["body"], skill_name)
+                # Write as references/{skill-name}.md
+                ref_file = references_dir / f"{skill_name}.md"
+                ref_file.write_text(rewritten_body)
 
-            # Rewrite paths in the body
-            rewritten_body = rewrite_paths(parsed["body"], skill_name)
+            # Copy skill's references -> references/{skill-name}/
+            skill_refs = tmp_dest / "references"
+            if skill_refs.exists() and any(skill_refs.iterdir()):
+                dest_refs = references_dir / skill_name
+                shutil.copytree(skill_refs, dest_refs, dirs_exist_ok=True)
 
-            # Write as instructions.md
-            instructions_md = skill_dest / "instructions.md"
-            instructions_md.write_text(rewritten_body)
+            # Also copy root-level .md files (except SKILL.md, README.md) -> references/{skill-name}/
+            for md_file in tmp_dest.glob("*.md"):
+                if md_file.name.lower() not in ["skill.md", "readme.md"]:
+                    dest_refs = references_dir / skill_name
+                    dest_refs.mkdir(exist_ok=True)
+                    shutil.copy(md_file, dest_refs / md_file.name)
 
-            # Remove original SKILL.md
-            skill_md.unlink()
+            # Copy skill's scripts -> scripts/{skill-name}/
+            skill_scripts = tmp_dest / "scripts"
+            if skill_scripts.exists() and any(skill_scripts.iterdir()):
+                scripts_dir.mkdir(exist_ok=True)
+                dest_scripts = scripts_dir / skill_name
+                shutil.copytree(skill_scripts, dest_scripts, dirs_exist_ok=True)
 
         print(f"  ✓ {metadata['name']} ({metadata['commit']})")
 

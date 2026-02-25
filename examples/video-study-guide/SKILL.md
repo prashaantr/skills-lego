@@ -9,28 +9,28 @@ Composite skill combining: youtube-clipper-skill, mermaid-diagrams, pdf
 
 ## Included Skills
 
-| Skill | Description | Instructions |
-|-------|-------------|--------------|
-| youtube-clipper-skill | > | `skills/youtube-clipper-skill/instructions.md` |
-| mermaid-diagrams | Comprehensive guide for creating software diagrams | `skills/mermaid-diagrams/instructions.md` |
-| pdf | Use this skill whenever the user wants to do anyth | `skills/pdf/instructions.md` |
+| Skill | Description | Reference |
+|-------|-------------|-----------|
+| youtube-clipper-skill | > | `references/youtube-clipper-skill.md` |
+| mermaid-diagrams | Comprehensive guide for creating software diagrams | `references/mermaid-diagrams.md` |
+| pdf | Use this skill whenever the user wants to do anyth | `references/pdf.md` |
 
 ## Workflow
 
 When creating a study guide from a YouTube video:
 
 1. **Extract Video Content**
-   - Read `skills/youtube-clipper-skill/instructions.md`
+   - Read `references/youtube-clipper-skill.md`
    - Get the video transcript and identify key concepts
 
 2. **Create Visual Diagrams**
    - For EACH major concept:
-     a. Read `skills/mermaid-diagrams/instructions.md`
+     a. Read `references/mermaid-diagrams.md`
      b. Create a mermaid diagram (flowchart, sequence, or mindmap)
      c. Add to the study guide with context
 
 3. **Export PDF Study Guide**
-   - Read `skills/pdf/instructions.md`
+   - Read `references/pdf.md`
    - Compile with table of contents, diagrams, and timestamps
 
 IMPORTANT: Create diagrams as you identify concepts, not all at the end.
@@ -39,9 +39,9 @@ IMPORTANT: Create diagrams as you identify concepts, not all at the end.
 
 | Reference | When to Read |
 |-----------|--------------|
-| `skills/youtube-clipper-skill/instructions.md` | When working with youtube-clipper-skill functionality |
-| `skills/mermaid-diagrams/instructions.md` | When working with mermaid-diagrams functionality |
-| `skills/pdf/instructions.md` | When working with pdf functionality |
+| `references/youtube-clipper-skill.md` | When working with youtube-clipper-skill functionality |
+| `references/mermaid-diagrams.md` | When working with mermaid-diagrams functionality |
+| `references/pdf.md` | When working with pdf functionality |
 
 ---
 

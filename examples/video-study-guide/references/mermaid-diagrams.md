@@ -132,13 +132,13 @@ erDiagram
 
 For in-depth guidance on specific diagram types, see:
 
-- **[references/class-diagrams.md](skills/mermaid-diagrams/references/class-diagrams.md)** - Domain modeling, relationships (association, composition, aggregation, inheritance), multiplicity, methods/properties
-- **[references/sequence-diagrams.md](skills/mermaid-diagrams/references/sequence-diagrams.md)** - Actors, participants, messages (sync/async), activations, loops, alt/opt/par blocks, notes
-- **[references/flowcharts.md](skills/mermaid-diagrams/references/flowcharts.md)** - Node shapes, connections, decision logic, subgraphs, styling
-- **[references/erd-diagrams.md](skills/mermaid-diagrams/references/erd-diagrams.md)** - Entities, relationships, cardinality, keys, attributes
-- **[references/c4-diagrams.md](skills/mermaid-diagrams/references/c4-diagrams.md)** - System context, container, component diagrams, boundaries
-- **[references/architecture-diagrams.md](skills/mermaid-diagrams/references/architecture-diagrams.md)** - Cloud services, infrastructure, CI/CD deployments
-- **[references/advanced-features.md](skills/mermaid-diagrams/references/advanced-features.md)** - Themes, styling, configuration, layout options
+- **[references/class-diagrams.md](references/mermaid-diagrams/class-diagrams.md)** - Domain modeling, relationships (association, composition, aggregation, inheritance), multiplicity, methods/properties
+- **[references/sequence-diagrams.md](references/mermaid-diagrams/sequence-diagrams.md)** - Actors, participants, messages (sync/async), activations, loops, alt/opt/par blocks, notes
+- **[references/flowcharts.md](references/mermaid-diagrams/flowcharts.md)** - Node shapes, connections, decision logic, subgraphs, styling
+- **[references/erd-diagrams.md](references/mermaid-diagrams/erd-diagrams.md)** - Entities, relationships, cardinality, keys, attributes
+- **[references/c4-diagrams.md](references/mermaid-diagrams/c4-diagrams.md)** - System context, container, component diagrams, boundaries
+- **[references/architecture-diagrams.md](references/mermaid-diagrams/architecture-diagrams.md)** - Cloud services, infrastructure, CI/CD deployments
+- **[references/advanced-features.md](references/mermaid-diagrams/advanced-features.md)** - Themes, styling, configuration, layout options
 
 ## Best Practices
 
