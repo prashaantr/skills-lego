@@ -132,9 +132,9 @@ python compose.py --package ./my-composite --output my-composite.zip
 5. **Generate** - Creates main SKILL.md with combined triggers and workflow
 6. **Attribute** - Creates SOURCES.md with commit hashes and licenses
 
-## Attribution & Updates
+## Attribution
 
-Each composite includes `SOURCES.md`:
+Skills Lego automatically tracks where each skill came from. Every composite includes a `SOURCES.md` file:
 
 ```markdown
 # Sources
@@ -147,9 +147,73 @@ Last composed: 2025-02-25
 | nano-banana | github.com/user/nano-banana | e4f5g6h | Apache-2.0 |
 ```
 
-To update with latest versions:
+This provides:
+
+- **Credit** - Original authors are always attributed
+- **Traceability** - Exact commit hash shows which version was used
+- **License compliance** - Licenses are detected and recorded (MIT, Apache-2.0, GPL, BSD)
+- **Reproducibility** - Anyone can see exactly what went into the composite
+
+When you share a composite skill, recipients can see who created the original components and find the source repos.
+
+## Updating Skills
+
+Composite skills are **frozen snapshots** - they don't auto-update when source skills change. This is intentional: it prevents breaking changes from affecting your workflow.
+
+When you want the latest versions, you have two options:
+
+### Option 1: Update Command
+
+Re-fetch all skills from their original repos:
+
 ```bash
 python compose.py --update ./my-composite
+```
+
+This reads `SOURCES.md`, fetches the latest code from each repo, and rebuilds the composite while **preserving your custom orchestration logic** in SKILL.md.
+
+### Option 2: Regenerate from Scratch
+
+If you want to change the workflow or add/remove skills:
+
+```bash
+python compose.py \
+    --name "my-composite" \
+    --skills "github.com/user/skill-a" "github.com/user/skill-b" \
+    --workflow "Updated workflow description..." \
+    --output ./my-composite
+```
+
+### When to Update
+
+- **Bug fixes** - A source skill fixed a bug you're hitting
+- **New features** - A source skill added functionality you need
+- **Security patches** - A source skill patched a vulnerability
+
+### Update Flow
+
+```
+┌─────────────────────────────────────────┐
+│          Your Composite Skill           │
+│  (frozen at commit abc123, def456)      │
+└────────────────────┬────────────────────┘
+                     │
+                     │  python compose.py --update .
+                     ▼
+┌─────────────────────────────────────────┐
+│         Reads SOURCES.md                │
+│   - skill-a: github.com/user/skill-a    │
+│   - skill-b: github.com/user/skill-b    │
+└────────────────────┬────────────────────┘
+                     │
+                     │  Fetches latest from each repo
+                     ▼
+┌─────────────────────────────────────────┐
+│        Updated Composite Skill          │
+│  (now at commit xyz789, uvw012)         │
+│  SOURCES.md updated with new hashes     │
+│  Your workflow in SKILL.md preserved    │
+└─────────────────────────────────────────┘
 ```
 
 ## Requirements
