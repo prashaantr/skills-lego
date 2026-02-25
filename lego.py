@@ -25,8 +25,14 @@ from typing import Optional
 from urllib.parse import urlparse
 
 
-def parse_github_url(url: str) -> tuple[str, str, str]:
-    """Parse GitHub URL into (owner, repo, branch)."""
+def parse_github_url(url: str) -> tuple[str, str, str, str]:
+    """Parse GitHub URL into (owner, repo, branch, skill_path).
+
+    Supports formats:
+    - github.com/owner/repo
+    - github.com/owner/repo@skill-name (skill in skills/skill-name/)
+    - owner/repo@skill-name
+    """
     url = url.strip()
 
     # Remove protocol
@@ -39,6 +45,12 @@ def parse_github_url(url: str) -> tuple[str, str, str]:
     if url.startswith("github.com/"):
         url = url[11:]
 
+    # Check for @skill-name suffix
+    skill_path = ""
+    if "@" in url:
+        url, skill_name = url.rsplit("@", 1)
+        skill_path = f"skills/{skill_name}"
+
     # Parse owner/repo
     parts = url.split("/")
     owner = parts[0]
@@ -49,15 +61,16 @@ def parse_github_url(url: str) -> tuple[str, str, str]:
     if len(parts) > 3 and parts[2] == "tree":
         branch = parts[3]
 
-    return owner, repo, branch
+    return owner, repo, branch, skill_path
 
 
 def fetch_skill(url: str, dest: Path) -> dict:
     """Clone a skill repo and return metadata."""
-    owner, repo, branch = parse_github_url(url)
+    owner, repo, branch, skill_path = parse_github_url(url)
     clone_url = f"https://github.com/{owner}/{repo}.git"
 
-    print(f"  Fetching {owner}/{repo}...")
+    skill_name = skill_path.split("/")[-1] if skill_path else repo
+    print(f"  Fetching {owner}/{repo}" + (f"@{skill_name}" if skill_path else "") + "...")
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp) / repo
@@ -91,10 +104,19 @@ def fetch_skill(url: str, dest: Path) -> dict:
         )
         commit = commit_result.stdout.strip()[:7]
 
-        # Find SKILL.md (could be in root or a subdirectory)
-        skill_md = find_skill_md(tmp_path)
-        if not skill_md:
-            raise RuntimeError(f"No SKILL.md found in {clone_url}")
+        # If skill_path specified, look there first
+        skill_md = None
+        if skill_path:
+            specific_path = tmp_path / skill_path / "SKILL.md"
+            if specific_path.exists():
+                skill_md = specific_path
+            else:
+                raise RuntimeError(f"No SKILL.md found at {skill_path} in {clone_url}")
+        else:
+            # Find SKILL.md (could be in root or a subdirectory)
+            skill_md = find_skill_md(tmp_path)
+            if not skill_md:
+                raise RuntimeError(f"No SKILL.md found in {clone_url}")
 
         skill_root = skill_md.parent
 
@@ -344,11 +366,10 @@ def compose(
     # Fetch each skill
     skills = []
     for url in skill_urls:
-        skill_dest = skills_dir / Path(urlparse(url).path).stem.replace(".git", "")
-
-        # Handle simple repo names
-        _, repo, _ = parse_github_url(url)
-        skill_dest = skills_dir / repo
+        # Parse URL to get skill name (use @skill-name if present, else repo name)
+        _, repo, _, skill_path = parse_github_url(url)
+        skill_name = skill_path.split("/")[-1] if skill_path else repo
+        skill_dest = skills_dir / skill_name
 
         metadata = fetch_skill(url, skill_dest)
         skills.append(metadata)
@@ -359,7 +380,7 @@ def compose(
             parsed = parse_skill_md(skill_md)
 
             # Rewrite paths in the body
-            rewritten_body = rewrite_paths(parsed["body"], repo)
+            rewritten_body = rewrite_paths(parsed["body"], skill_name)
 
             # Write as instructions.md
             instructions_md = skill_dest / "instructions.md"

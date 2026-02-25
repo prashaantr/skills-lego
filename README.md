@@ -54,45 +54,52 @@ python lego.py \
 ln -s $(pwd)/my-composite ~/.claude/skills/document-suite
 ```
 
-## Real Example: IKEA-Style Manual Generator
+## Real Example: Video Study Guide
 
-Combines [assembly-instructions](https://github.com/user/assembly-instructions) with [nano-banana](https://github.com/user/nano-banana) (AI image generation):
+Combines three popular skills from [skills.sh](https://skills.sh):
+
+| Skill | Installs | Purpose |
+|-------|----------|---------|
+| [youtube-clipper](https://github.com/op7418/youtube-clipper-skill) | 1.4K | Extract video content |
+| [mermaid-diagrams](https://github.com/softaworks/agent-toolkit) | 2.8K | Create visual diagrams |
+| [pdf](https://github.com/anthropics/skills) | 21.6K | Export as PDF |
 
 ```bash
 python lego.py \
-    --name "ikea-generator" \
+    --name "video-study-guide" \
     --skills \
-        "github.com/user/assembly-instructions" \
-        "github.com/user/nano-banana" \
-    --workflow "When creating assembly instructions:
-1. Read skills/assembly-instructions/instructions.md for format
-2. For EACH step:
-   a. Write the step text
-   b. Read skills/nano-banana/instructions.md
-   c. Generate an image for this step
-   d. Continue to next step
-3. Compile final document with text + images interleaved
+        "github.com/op7418/youtube-clipper-skill" \
+        "github.com/softaworks/agent-toolkit" \
+        "github.com/anthropics/skills" \
+    --workflow "When creating a study guide from a YouTube video:
+1. Extract video transcript and identify key concepts
+2. For EACH major concept:
+   a. Create a mermaid diagram (flowchart, sequence, or mindmap)
+   b. Add to the study guide with context
+3. Compile final PDF with table of contents, diagrams, and timestamps
 
-IMPORTANT: Do not generate all text first. Image generation must happen per-step." \
-    --output ./ikea-generator
+IMPORTANT: Create diagrams as you identify concepts, not all at the end." \
+    --output ./video-study-guide
 ```
 
-The orchestration logic (`--workflow`) is the secret sauce. Without it, you just have 2 unrelated skills. With it, Claude knows to generate text → image → text → image in sequence.
+The orchestration logic (`--workflow`) is the secret sauce. Without it, you just have 3 unrelated skills. With it, Claude knows to extract → diagram → export in sequence, creating diagrams per-concept.
 
 ## Output Structure
 
 ```
-my-composite/
+video-study-guide/
 ├── SKILL.md              # Main orchestrator with workflow
 ├── SOURCES.md            # Attribution + update info
 └── skills/
-    ├── pdf-skill/
+    ├── youtube-clipper/
     │   ├── instructions.md    # Extracted from original SKILL.md
     │   ├── references/        # Original references
     │   └── scripts/           # Original scripts
-    └── xlsx-skill/
+    ├── mermaid-diagrams/
+    │   ├── instructions.md
+    │   └── references/
+    └── pdf/
         ├── instructions.md
-        ├── references/
         └── scripts/
 ```
 
@@ -141,10 +148,11 @@ Skills Lego automatically tracks where each skill came from. Every composite inc
 
 Last composed: 2025-02-25
 
-| Skill | Source | Commit | License |
-|-------|--------|--------|---------|
-| assembly | github.com/user/assembly-instructions | a1b2c3d | MIT |
-| nano-banana | github.com/user/nano-banana | e4f5g6h | Apache-2.0 |
+| Skill | Source | Installs | License |
+|-------|--------|----------|---------|
+| youtube-clipper | github.com/op7418/youtube-clipper-skill | 1.4K | MIT |
+| mermaid-diagrams | github.com/softaworks/agent-toolkit | 2.8K | MIT |
+| pdf | github.com/anthropics/skills | 21.6K | MIT |
 ```
 
 This provides:
@@ -227,10 +235,10 @@ No external dependencies - uses only Python stdlib.
 
 | Composite | Skills | Workflow |
 |-----------|--------|----------|
-| Document Suite | pdf + xlsx + charts | Route by file type |
-| IKEA Generator | assembly + nano-banana | Interleaved text/image generation |
-| Research Assistant | paper-review + web-search | Search → analyze → summarize |
-| Data Pipeline | csv-parser + validator + transformer | Sequential processing |
+| **Video Study Guide** | youtube-clipper + mermaid + pdf | Extract → diagram → export |
+| Research Reporter | deep-research + mermaid + pdf | Research → visualize → export |
+| Content Pipeline | youtube-transcript + transcript-fixer + pdf | Transcribe → fix → format |
+| Code Documenter | github-ops + mermaid + pptx | Analyze → diagram → present |
 
 ## License
 

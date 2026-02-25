@@ -3,9 +3,9 @@
 ## The Problem
 
 You have multiple Claude Code skills that work well together:
-- A PDF skill for reading documents
-- An XLSX skill for spreadsheets
-- A chart generation skill
+- A YouTube clipper skill for extracting video content
+- A Mermaid diagrams skill for creating visuals
+- A PDF skill for exporting documents
 
 But there's no way to:
 1. Install them as a single unit
@@ -19,40 +19,42 @@ Skills Lego creates **composite skills** - regular skills that bundle other skil
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    SOURCE REPOS                          │
-│  github.com/user/pdf-skill    github.com/user/xlsx-skill │
-└──────────────┬────────────────────────┬─────────────────┘
-               │                        │
-               ▼                        ▼
-┌─────────────────────────────────────────────────────────┐
-│                      lego.py                             │
-│                                                          │
-│  1. Clone repos                                          │
-│  2. Extract SKILL.md → instructions.md                   │
-│  3. Preserve folder structure                            │
-│  4. Rewrite relative paths                               │
-│  5. Generate orchestrating SKILL.md                      │
-│  6. Create SOURCES.md for attribution                    │
-└──────────────────────────┬──────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│                  COMPOSITE SKILL                         │
-│                                                          │
-│  my-composite/                                           │
-│  ├── SKILL.md          ← Orchestration + triggers        │
-│  ├── SOURCES.md        ← Attribution + commit hashes     │
-│  └── skills/                                             │
-│      ├── pdf-skill/                                      │
-│      │   ├── instructions.md  ← Extracted from SKILL.md  │
-│      │   ├── references/      ← Preserved                │
-│      │   └── scripts/         ← Preserved                │
-│      └── xlsx-skill/                                     │
-│          ├── instructions.md                             │
-│          ├── references/                                 │
-│          └── scripts/                                    │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         SOURCE REPOS                             │
+│  op7418/youtube-clipper   softaworks/mermaid   anthropics/pdf   │
+└──────────┬─────────────────────┬─────────────────────┬──────────┘
+           │                     │                     │
+           └─────────────────────┼─────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                           lego.py                                │
+│                                                                  │
+│  1. Clone repos                                                  │
+│  2. Extract SKILL.md → instructions.md                           │
+│  3. Preserve folder structure                                    │
+│  4. Rewrite relative paths                                       │
+│  5. Generate orchestrating SKILL.md                              │
+│  6. Create SOURCES.md for attribution                            │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       COMPOSITE SKILL                            │
+│                                                                  │
+│  video-study-guide/                                              │
+│  ├── SKILL.md          ← Orchestration + triggers                │
+│  ├── SOURCES.md        ← Attribution + install counts            │
+│  └── skills/                                                     │
+│      ├── youtube-clipper/                                        │
+│      │   ├── instructions.md  ← Extracted from SKILL.md          │
+│      │   └── scripts/         ← Preserved                        │
+│      ├── mermaid-diagrams/                                       │
+│      │   └── instructions.md                                     │
+│      └── pdf/                                                    │
+│          ├── instructions.md                                     │
+│          └── scripts/                                            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Key Concepts
@@ -134,16 +136,16 @@ Example orchestration:
 ```markdown
 ## Workflow
 
-When creating IKEA-style assembly instructions:
+When creating a study guide from a YouTube video:
 
-1. Read `skills/assembly-instructions/instructions.md` for format
-2. For EACH step:
-   a. Write the step text
-   b. Read `skills/nano-banana/instructions.md`
-   c. Generate an image for this step
-   d. Continue to next step
+1. Read `skills/youtube-clipper/instructions.md` to extract content
+2. For EACH major concept:
+   a. Read `skills/mermaid-diagrams/instructions.md`
+   b. Create a diagram for this concept
+   c. Add to the study guide
+3. Read `skills/pdf/instructions.md` to export final document
 
-IMPORTANT: Image generation must happen per-step, not all at the end.
+IMPORTANT: Create diagrams as you identify concepts, not all at the end.
 ```
 
 ## Updating Composites
