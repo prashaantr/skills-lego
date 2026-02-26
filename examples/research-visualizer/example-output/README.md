@@ -9,9 +9,10 @@ This folder contains an example research report generated using the `research-vi
 
 ## Generated Files
 
-| File | Description |
-|------|-------------|
-| `transformer-research.md` | AI-generated research report with diagrams |
+| File | Description | Tested |
+|------|-------------|--------|
+| `rag-research.md` | RAG explanation with diagrams | Yes - skill installed and workflow followed |
+| `transformer-research.md` | Transformer architecture report | Manual (pre-skill-install) |
 
 ## How It Was Generated
 
