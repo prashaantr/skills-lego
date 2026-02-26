@@ -89,21 +89,83 @@ The orchestration logic (`--workflow`) is the secret sauce. Without it, you just
 ## Output Structure
 
 ```
-video-study-guide/
-├── SKILL.md              # Main orchestrator with workflow
+my-composite/
+├── SKILL.md              # Your workflow + reference table
 ├── SOURCES.md            # Attribution + update info
-└── skills/
-    ├── youtube-clipper/
-    │   ├── instructions.md    # Extracted from original SKILL.md
-    │   ├── references/        # Original references
-    │   └── scripts/           # Original scripts
-    ├── mermaid-diagrams/
-    │   ├── instructions.md
-    │   └── references/
-    └── pdf/
-        ├── instructions.md
-        └── scripts/
+├── references/
+│   ├── skill-a.md        # Skill A's instructions (SKILL.md body)
+│   ├── skill-a/          # Skill A's original references
+│   │   ├── api.md
+│   │   └── examples.md
+│   ├── skill-b.md        # Skill B's instructions
+│   └── skill-b/
+└── scripts/
+    ├── skill-a/          # Skill A's scripts
+    └── skill-b/
 ```
+
+## How SKILL.md Becomes a Reference
+
+Each skill's `SKILL.md` gets transformed when combined:
+
+**Before (original skill on GitHub):**
+```
+skill-a/
+├── SKILL.md
+│   ┌────────────────────────────────┐
+│   │ ---                            │
+│   │ name: skill-a                  │  ← Frontmatter (for triggering)
+│   │ description: "Does X..."       │
+│   │ ---                            │
+│   │                                │
+│   │ # Skill A                      │  ← Body (instructions)
+│   │ Read `references/api.md`...    │
+│   │ Run `scripts/tool.py`...       │
+│   └────────────────────────────────┘
+├── references/
+│   └── api.md
+└── scripts/
+    └── tool.py
+```
+
+**After (in composite):**
+```
+my-composite/
+├── SKILL.md                         ← NEW orchestrator (your workflow)
+├── references/
+│   ├── skill-a.md                   ← Body only, frontmatter stripped
+│   │   ┌────────────────────────────────┐
+│   │   │ # Skill A                      │
+│   │   │ Read `references/skill-a/api.md`  ← Paths rewritten!
+│   │   │ Run `scripts/skill-a/tool.py`     │
+│   │   └────────────────────────────────┘
+│   └── skill-a/
+│       └── api.md                   ← Original references preserved
+└── scripts/
+    └── skill-a/
+        └── tool.py                  ← Scripts namespaced
+```
+
+**What happens to each SKILL.md:**
+
+| Step | Transformation |
+|------|----------------|
+| 1 | Frontmatter stripped (name, description removed) |
+| 2 | Body preserved (instructions kept) |
+| 3 | Paths rewritten (`references/` → `references/skill-a/`) |
+| 4 | Saved as `references/skill-a.md` |
+
+**Why strip the frontmatter?** The frontmatter triggers the skill independently. In a composite, your workflow triggers the whole thing—individual skills become references that Claude reads when the workflow says to.
+
+## No LLM Required
+
+**lego.py is pure Python.** It doesn't use any AI. It just:
+1. Fetches skills from GitHub
+2. Extracts and transforms SKILL.md files
+3. Combines them with your workflow text
+4. Outputs the composite
+
+The intelligence comes from **Claude reading your composite** and following the workflow you wrote.
 
 ## Commands
 
