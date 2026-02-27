@@ -1,6 +1,46 @@
 'use client'
 import { useState } from 'react'
 
+function parseGitHubUrl(url: string): string {
+  let cleanUrl = url.trim()
+  cleanUrl = cleanUrl.replace(/^https?:\/\//, '')
+  cleanUrl = cleanUrl.replace(/^github\.com\//, '')
+  
+  const treeMatch = cleanUrl.match(/^([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+  if (treeMatch) {
+    const [, owner, repo, branch, path] = treeMatch
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/SKILL.md`
+  }
+  
+  const blobMatch = cleanUrl.match(/^([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/)
+  if (blobMatch) {
+    const [, owner, repo, branch, path] = blobMatch
+    if (path.endsWith('SKILL.md')) {
+      return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
+    }
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/SKILL.md`
+  }
+  
+  const simpleMatch = cleanUrl.match(/^([^\/]+)\/([^\/]+)\/?$/)
+  if (simpleMatch) {
+    const [, owner, repo] = simpleMatch
+    return `https://raw.githubusercontent.com/${owner}/${repo}/main/SKILL.md`
+  }
+  
+  return `https://raw.githubusercontent.com/${cleanUrl}/main/SKILL.md`
+}
+
+async function fetchSkillMd(url: string): Promise<string> {
+  const rawUrl = parseGitHubUrl(url)
+  let res = await fetch(rawUrl)
+  if (!res.ok) {
+    const masterUrl = rawUrl.replace('/main/', '/master/')
+    res = await fetch(masterUrl)
+    if (!res.ok) throw new Error(`Could not fetch SKILL.md from ${url}`)
+  }
+  return res.text()
+}
+
 export default function Home() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -17,16 +57,9 @@ export default function Home() {
     setResult('')
     try {
       const fetchedSkills = await Promise.all(
-        skills.filter(u => u.trim()).map(async (url, i) => {
-          const rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
-          const skillUrl = rawUrl.includes('SKILL.md') ? rawUrl : `${rawUrl.replace(/\/$/, '')}/main/SKILL.md`
-          const res = await fetch(skillUrl)
-          if (!res.ok) {
-            const res2 = await fetch(skillUrl.replace('/main/', '/master/'))
-            if (!res2.ok) throw new Error(`fetch failed: skill ${i + 1}`)
-            return { url, content: await res2.text() }
-          }
-          return { url, content: await res.text() }
+        skills.filter(u => u.trim()).map(async (url) => {
+          const content = await fetchSkillMd(url)
+          return { url, content }
         })
       )
       
@@ -51,7 +84,9 @@ ${fetchedSkills.map((s, i) => `## references/skill-${i + 1}.md
 ${s.content}`).join('\n\n---\n\n')}
 `
       setResult(composed)
-    } catch (e: any) { setError(e.message || 'Failed') }
+    } catch (e: any) { 
+      setError(e.message || 'Failed to fetch skills') 
+    }
     setLoading(false)
   }
 
@@ -71,207 +106,209 @@ ${s.content}`).join('\n\n---\n\n')}
   const colors = ['#E3000B', '#FFCF00', '#0055BF']
 
   return (
-    <main className="min-h-screen bg-[#0D0D0D] text-white">
+    <main className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-white/10 px-4 md:px-6 py-3">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Brick color="#E3000B" />
-            <span className="font-mono font-bold text-sm">skills-lego</span>
+      <header className="bg-[#FFCF00] px-4 md:px-8 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          {/* Logo - Skills Lego in one box */}
+          <div className="bg-[#E3000B] rounded-lg px-4 py-2 flex items-center gap-2">
+            <BrickIcon />
+            <span className="text-white font-black text-lg tracking-tight">SKILLS LEGO</span>
           </div>
+          
+          {/* GitHub link with icon */}
           <a 
             href="https://github.com/prashaantr/skills-lego" 
             target="_blank"
-            className="text-white/50 hover:text-white text-sm font-mono"
+            className="flex items-center gap-2 text-[#1B1B1B] hover:text-[#1B1B1B]/70 font-bold text-sm"
           >
-            github
+            <GitHubIcon />
+            <span className="hidden md:inline">GitHub</span>
           </a>
         </div>
       </header>
 
+      {/* Hero */}
+      <div className="bg-[#FFCF00] px-4 md:px-8 pb-12 pt-4">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-black text-[#1B1B1B] mb-2">
+            Build composite skills
+          </h1>
+          <p className="text-[#1B1B1B]/70 text-lg">
+            Stack Claude skills like LEGO bricks
+          </p>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <div className="flex items-start gap-4 mb-8">
-          <div className="hidden md:flex flex-col gap-1 pt-1">
-            <Brick color="#FFCF00" size="sm" />
-            <Brick color="#0055BF" size="sm" />
-            <Brick color="#237841" size="sm" />
+      <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 -mt-4">
+        <div className="bg-white rounded-2xl border-2 border-[#1B1B1B]/10 p-6 md:p-8">
+          
+          {/* Name & Description */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-[#1B1B1B] font-bold text-sm mb-2">Skill Name</label>
+              <input
+                type="text"
+                placeholder="my-composite-skill"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full border-2 border-[#1B1B1B]/10 rounded-lg px-4 py-3 text-[#1B1B1B] placeholder:text-[#1B1B1B]/30 focus:border-[#0055BF] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[#1B1B1B] font-bold text-sm mb-2">Description</label>
+              <input
+                type="text"
+                placeholder="What this skill does"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                className="w-full border-2 border-[#1B1B1B]/10 rounded-lg px-4 py-3 text-[#1B1B1B] placeholder:text-[#1B1B1B]/30 focus:border-[#0055BF] focus:outline-none"
+              />
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Compose Skills
-            </h1>
-            <p className="text-white/50 font-mono text-sm">
-              Combine Claude skills into one composite with orchestration logic
+
+          {/* Skills */}
+          <div className="mb-6">
+            <label className="block text-[#1B1B1B] font-bold text-sm mb-3">Skills to combine</label>
+            <p className="text-[#1B1B1B]/50 text-xs mb-3">
+              Supports: github.com/user/repo or github.com/user/repo/tree/main/path/to/skill
             </p>
-          </div>
-        </div>
-
-        {/* Name & Description */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-white/50 font-mono text-xs mb-2">--name</label>
-            <input
-              type="text"
-              placeholder="my-composite-skill"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 font-mono text-sm placeholder:text-white/30 focus:border-white/30 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-white/50 font-mono text-xs mb-2">--description</label>
-            <input
-              type="text"
-              placeholder="What this composite does"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 font-mono text-sm placeholder:text-white/30 focus:border-white/30 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Skills */}
-        <div className="mb-6">
-          <label className="block text-white/50 font-mono text-xs mb-2">--skills</label>
-          <div className="space-y-3">
-            {skills.map((url, i) => (
-              <div key={i} className="relative">
-                <div 
-                  className="rounded-lg p-3 border"
-                  style={{ 
-                    backgroundColor: `${colors[i]}10`,
-                    borderColor: `${colors[i]}30`
-                  }}
-                >
-                  <div className="absolute -top-1.5 left-3 flex gap-1">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors[i] }} />
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors[i] }} />
+            <div className="space-y-3">
+              {skills.map((url, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div 
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: colors[i % colors.length] }}
+                  >
+                    <Brick color="white" />
                   </div>
                   <input
                     type="text"
-                    placeholder={`github.com/user/skill-${i + 1}`}
+                    placeholder={`github.com/user/repo or .../tree/main/path`}
                     value={url}
                     onChange={e => { const n = [...skills]; n[i] = e.target.value; setSkills(n) }}
-                    className="w-full bg-[#0D0D0D] border border-white/10 rounded px-3 py-2 font-mono text-sm placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+                    className="flex-1 border-2 border-[#1B1B1B]/10 rounded-lg px-4 py-3 text-[#1B1B1B] placeholder:text-[#1B1B1B]/30 focus:border-[#0055BF] focus:outline-none text-sm"
                   />
+                  {skills.length > 1 && (
+                    <button
+                      onClick={() => setSkills(skills.filter((_, j) => j !== i))}
+                      className="text-[#1B1B1B]/30 hover:text-[#E3000B] text-xl font-bold"
+                    >
+                      x
+                    </button>
+                  )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <button
+              onClick={() => setSkills([...skills, ''])}
+              className="mt-3 text-[#0055BF] hover:underline font-bold text-sm"
+            >
+              + Add another skill
+            </button>
           </div>
+
+          {/* Workflow */}
+          <div className="mb-6">
+            <label className="block text-[#1B1B1B] font-bold text-sm mb-2">
+              Workflow <span className="font-normal text-[#1B1B1B]/50">(how skills work together)</span>
+            </label>
+            <textarea
+              placeholder={`Example:
+1. Use skill-1 to extract data
+2. Process with skill-2
+3. Format output with skill-3`}
+              value={workflow}
+              onChange={e => setWorkflow(e.target.value)}
+              rows={5}
+              className="w-full border-2 border-[#1B1B1B]/10 rounded-lg px-4 py-3 text-[#1B1B1B] placeholder:text-[#1B1B1B]/30 focus:border-[#0055BF] focus:outline-none resize-none"
+            />
+          </div>
+
+          {/* Build Button */}
           <button
-            onClick={() => setSkills([...skills, ''])}
-            className="mt-2 text-white/40 hover:text-white/70 text-xs font-mono"
+            onClick={compose}
+            disabled={loading || !skills.some(u => u.trim())}
+            className="w-full md:w-auto px-8 py-4 bg-[#E3000B] hover:bg-[#C50000] text-white font-black text-lg rounded-lg disabled:bg-[#1B1B1B]/20 disabled:cursor-not-allowed transition-colors"
           >
-            + add skill
+            {loading ? 'Building...' : 'Build Skill'}
           </button>
+
+          {error && (
+            <div className="mt-4 p-4 bg-[#E3000B]/10 rounded-lg border border-[#E3000B]/20">
+              <p className="text-[#E3000B] font-bold text-sm">{error}</p>
+              <p className="text-[#1B1B1B]/50 text-xs mt-1">
+                Make sure the repo/path contains a SKILL.md file
+              </p>
+            </div>
+          )}
         </div>
-
-        {/* Workflow */}
-        <div className="mb-6">
-          <label className="block text-white/50 font-mono text-xs mb-2">
-            --workflow <span className="text-[#FFCF00]">(orchestration logic)</span>
-          </label>
-          <textarea
-            placeholder={`How the skills work together. Example:
-
-When creating a study guide:
-1. Extract video transcript using skill-1
-2. For EACH major concept:
-   a. Create a diagram using skill-2
-   b. Add context and explanation
-3. Compile final PDF using skill-3
-
-IMPORTANT: Process concepts incrementally, not all at end.`}
-            value={workflow}
-            onChange={e => setWorkflow(e.target.value)}
-            rows={8}
-            className="w-full bg-white/5 border border-white/10 rounded px-3 py-3 font-mono text-sm placeholder:text-white/30 focus:border-white/30 focus:outline-none resize-none"
-          />
-          <p className="mt-1 text-white/30 text-xs font-mono">
-            The workflow is the secret sauce - tells Claude how to coordinate the skills
-          </p>
-        </div>
-
-        {/* Compose Button */}
-        <button
-          onClick={compose}
-          disabled={loading || !skills.some(u => u.trim())}
-          className="relative px-8 py-3 bg-[#FFCF00] text-[#0D0D0D] font-bold rounded text-sm disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex gap-0.5">
-            <div className="w-2 h-2 rounded-full bg-[#FFE066]" />
-            <div className="w-2 h-2 rounded-full bg-[#FFE066]" />
-          </div>
-          {loading ? 'composing...' : 'lego.py compose'}
-        </button>
-
-        {error && (
-          <p className="mt-4 text-[#E3000B] font-mono text-sm">
-            error: {error}
-          </p>
-        )}
 
         {/* Output */}
         {result && (
-          <div className="mt-8 border border-white/10 rounded-lg overflow-hidden relative">
-            <div className="absolute -top-1.5 left-6 flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-[#237841]" />
-              <div className="w-3 h-3 rounded-full bg-[#237841]" />
-              <div className="w-3 h-3 rounded-full bg-[#237841]" />
-            </div>
-            
-            <div className="bg-white/5 px-4 py-3 flex items-center justify-between border-b border-white/10">
-              <span className="font-mono text-sm text-white/50">
+          <div className="mt-6 bg-[#1B1B1B] rounded-2xl overflow-hidden">
+            <div className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10">
+              <span className="text-white font-bold">
                 {name || 'composed-skill'}/SKILL.md
               </span>
               <div className="flex gap-2">
                 <button 
                   onClick={copy}
-                  className="px-3 py-1 text-xs font-mono text-white/70 hover:text-white border border-white/20 rounded"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-bold text-sm transition-colors"
                 >
-                  {copied ? 'copied' : 'copy'}
+                  {copied ? 'Copied!' : 'Copy'}
                 </button>
                 <button 
                   onClick={download}
-                  className="px-3 py-1 text-xs font-mono bg-[#FFCF00] text-[#0D0D0D] rounded font-bold"
+                  className="px-4 py-2 bg-[#FFCF00] hover:bg-[#FFD633] text-[#1B1B1B] rounded-lg font-bold text-sm transition-colors"
                 >
-                  download
+                  Download
                 </button>
               </div>
             </div>
-            <pre className="p-4 text-sm font-mono text-white/80 overflow-auto max-h-96 bg-[#0D0D0D]">
+            <pre className="p-6 text-white/80 text-sm overflow-auto max-h-96 font-mono">
               {result}
             </pre>
           </div>
         )}
 
-        {/* CLI equivalent */}
-        <div className="mt-8 border border-white/10 rounded-lg p-4">
-          <p className="text-white/40 text-xs font-mono mb-2">CLI equivalent:</p>
-          <code className="text-[#FFCF00] text-xs font-mono break-all">
-            python lego.py --name "{name || 'my-skill'}" --skills {skills.filter(s => s).map(s => `"${s}"`).join(' ') || '"..."'} --workflow "..." --output ./output
-          </code>
+        {/* Footer */}
+        <div className="mt-12 flex justify-center gap-2">
+          <div className="w-8 h-6 rounded bg-[#E3000B]" />
+          <div className="w-8 h-6 rounded bg-[#FFCF00]" />
+          <div className="w-8 h-6 rounded bg-[#0055BF]" />
+          <div className="w-8 h-6 rounded bg-[#237841]" />
         </div>
       </div>
     </main>
   )
 }
 
-function Brick({ color, size = 'md' }: { color: string; size?: 'xs' | 'sm' | 'md' }) {
-  const dims = {
-    xs: { w: 16, h: 10, stud: 4 },
-    sm: { w: 24, h: 14, stud: 5 },
-    md: { w: 32, h: 18, stud: 6 },
-  }[size]
-  
+function Brick({ color }: { color: string }) {
   return (
-    <div className="relative" style={{ width: dims.w, height: dims.h + dims.stud }}>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex gap-0.5">
-        <div className="rounded-full" style={{ width: dims.stud, height: dims.stud, backgroundColor: color, filter: 'brightness(1.2)' }} />
-        <div className="rounded-full" style={{ width: dims.stud, height: dims.stud, backgroundColor: color, filter: 'brightness(1.2)' }} />
-      </div>
-      <div className="absolute bottom-0 w-full rounded-sm" style={{ height: dims.h, backgroundColor: color }} />
-    </div>
+    <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+      <rect y="4" width="20" height="12" rx="2" fill={color} />
+      <circle cx="6" cy="4" r="3" fill={color} />
+      <circle cx="14" cy="4" r="3" fill={color} />
+    </svg>
+  )
+}
+
+function BrickIcon() {
+  return (
+    <svg width="24" height="20" viewBox="0 0 24 20" fill="none">
+      <rect y="5" width="24" height="15" rx="2" fill="white" />
+      <circle cx="7" cy="5" r="4" fill="white" />
+      <circle cx="17" cy="5" r="4" fill="white" />
+    </svg>
+  )
+}
+
+function GitHubIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+    </svg>
   )
 }
